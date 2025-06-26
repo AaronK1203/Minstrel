@@ -307,21 +307,7 @@ class Music:
         return music_canvas
         
         
-if __name__ == '__main__':
-    
-    sauron = Music('Sauron','mp3_files/Sauron.mp3',author = 'Bear McCreary',total_time = 165)
 
-    sauron.intervals = [0.0,81.5,100.0]
-
-    root = tk.Tk()
-    root.title('Hi')
-    #sauron.to_window(root)
-    
-    print(sauron.name)
-
-    mars = Music('Mars, the Bringer of War','mp3_files/Mars-the-Bringer-of-War.mp3',author = 'Gustav Holst',total_time = 425,intervals = [0.0,248.5])
-
-    sauron.to_canvas(root).pack()
 
     print(sauron.total_time)
     
