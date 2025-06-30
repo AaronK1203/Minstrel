@@ -8,6 +8,7 @@ from saving import Music_Array
 from music import *
 from pathlib import Path
 import random
+import math
 
 '''Beginning of Importing Save Data and Parsing'''
 music_array = saving.save_to_music_array()
@@ -61,6 +62,8 @@ queue_canvas.create_window((0,0),window = queue_frame_in,anchor = tk.NW)
 
 queue_widgets = []
 
+#Fills the Queue Canvas with interactable buttons, based on the contents
+#of Linked LIst queue
 def fill_queue(**kwargs):
 
     #Skips to node of param skips
@@ -74,6 +77,10 @@ def fill_queue(**kwargs):
         last_song_window[0] = queue.head.song.to_canvas(music_frame)
         last_song_window[0].place(relx = 0.5, rely = 0.5,anchor = tk.CENTER)
         queue.head.song.load()
+        fill_queue()
+    #Removes a Node from the Queue and updates the GUI
+    def remove_node(song):
+        queue.remove_music(song)
         fill_queue()
         
     #Resets the queue to a blank linked list
@@ -98,12 +105,18 @@ def fill_queue(**kwargs):
 
     n = queue.head
     i = 0
+    song_index = 0
     while n != None:
-        queue_widgets.append(tk.Button(queue_frame_in,text = n.song.name,command = lambda i=i:go_to_node(i)))
-        queue_widgets[i].grid(row = 0,column = i,padx = 10,pady = 30)
+        queue_widgets.append(tk.Button(queue_frame_in,text = n.song.name,command = lambda i=song_index:go_to_node(i)))
+        queue_widgets[i].grid(row = 0,column = i//2,padx = 10,pady = 30)
+        i+=1
+        queue_widgets.append(tk.Button(queue_frame_in,text = 'Remove',width = 8,command = lambda song=n.song:remove_node(song)))
+        queue_widgets[i].grid(row = 1,column = i//2,padx = 10)
+        i+=1
+        song_index+=1
         
         n = n.next
-        i+=1
+        
     #To fix the scrollbar not reaching all the widgets        (Wow that's a lot of spaces)
     corrector = tk.Label(queue_frame_in,text = '                                                          ',bg = 'white')
     queue_widgets.append(corrector)
@@ -114,6 +127,7 @@ def fill_queue(**kwargs):
         
 fill_queue()
 
+#Moves to the next song in the queue if there is one
 def next_in_queue():
     #If either head or head.next is null, do nothing
     if queue.head == None or queue.head.next == None:
@@ -134,11 +148,11 @@ clear_button.place(relx = 0.65,rely = 0.5,anchor = tk.CENTER)
 next_button = tk.Button(root,text = 'Next',width = 10,command = next_in_queue)
 next_button.place(relx = 0.75,rely = 0.5,anchor = tk.CENTER)
 
-is_repeat = tk.BooleanVar()
+is_repeat = tk.BooleanVar(root)
 repeat_check = tk.Checkbutton(root,text = 'Repeat',variable = is_repeat)
 repeat_check.place(relx = 0.55,rely = 0.5,anchor = tk.CENTER)
 
-is_autoplay = tk.BooleanVar()
+is_autoplay = tk.BooleanVar(root)
 autoplay_check = tk.Checkbutton(root,text = 'Autoplay',variable = is_autoplay)
 autoplay_check .place(relx = 0.825,rely = 0.5,anchor = tk.CENTER)
 
@@ -181,6 +195,7 @@ selection_frame_in = tk.Frame(selection_canvas,width = 300,height = 600,
                               bg = 'white')
 selection_canvas.create_window((0,0),window = selection_frame_in,anchor = tk.NW)
 
+#A 2D Array used to store widgets in the selection frame
 song_widgets = []
 
 #Frame for displaying music canvas
@@ -204,43 +219,64 @@ def fill_selection(songs):
         queue.replace_head(Node(song))
         fill_queue()
 
-    def add_song_to_queue(song):
+    #Converts song into a node and adds it to the queue
+    def add_song_to_queue(song,**kwargs):
         queue.add_node(Node(song))
+        adjust_frame = kwargs.get('adjust_frame',True)
+        if adjust_frame:
+            fill_queue()
+    #Adds every song under category cat to the queue
+    def load_by_category(cat):
+        for song in songs:
+            if song.category == cat:
+                add_song_to_queue(song,adjust_frame = False)
+        fill_queue()
+    #Adds every song currently queried to the queue
+    def queue_everything():
+        for song in songs:
+            add_song_to_queue(song,adjust_frame = False)
         fill_queue()
         
-        
     #Get rid of all former widgets
-    for j in range(len(song_widgets)):
-        song_widgets[j].destroy()
+    for i in range(len(song_widgets)):
+        for j in range(len(song_widgets[i])):
+            song_widgets[i][j].destroy()
         
     song_widgets.clear()
-    i = 0
+    #Note: i represents the row in which each widget resides
+    song_widgets.append([tk.Button(selection_frame_in,text = 'Q All',
+                                   width = 10,height = 2,command = queue_everything)])
+    song_widgets[0][0].grid(row = 0,column = 0,pady = 20)
+    i = 1
+    j = 0
     last_category = ''
     for song in songs:
         if song.category != last_category:
+            song_widgets.append([])
             last_category = song.category
-            song_widgets.append(tk.Label(selection_frame_in,text = song.category + ':'))
-            song_widgets[i].grid(row = i,sticky = tk.W)
+            song_widgets[i].append(tk.Label(selection_frame_in,text = song.category + ':'))
+            song_widgets[i][0].grid(row = i,sticky = tk.W)
+            song_widgets[i].append(tk.Button(selection_frame_in,text = 'Q Cat',width = 8,
+                                             command = lambda cat = song.category: load_by_category(cat)))
+            song_widgets[i][1].grid(row = i,column = 2,pady = 10)
             i+=1
             
-            
-        song_widgets.append(tk.Label(selection_frame_in,text = '   '+song.name,font = ('Ariel',12)))
-        song_widgets[i].grid(row = i,column = 0,pady = 5,sticky = tk.W)
-        i+=1
+        song_widgets.append([])
+        song_widgets[i].append(tk.Label(selection_frame_in,text = '   '+song.name,font = ('Ariel',12)))
+        song_widgets[i][0].grid(row = i,column = 0,pady = 5,sticky = tk.W)
         
-        song_widgets.append(tk.Button(selection_frame_in,text = 'I>',width = 4,height = 2,
+        song_widgets[i].append(tk.Button(selection_frame_in,text = 'I>',width = 4,height = 2,
                                       command = lambda song = song: load_new_song(song)))
-        song_widgets[i].grid(row = i-1,column = 1,padx = 10)
-        i+=1
+        song_widgets[i][1].grid(row = i,column = 1,padx = 10)
 
-        song_widgets.append(tk.Button(selection_frame_in,text = 'Q',width = 4,height = 2,
+        song_widgets[i].append(tk.Button(selection_frame_in,text = 'Q',width = 4,height = 2,
                                       command = lambda song = song: add_song_to_queue(song)))
-        song_widgets[i].grid(row = i-2,column = 2,padx = 2)
+        song_widgets[i][2].grid(row = i,column = 2,padx = 2)
         i+=1
 
-    corrector = tk.Label(selection_frame_in,text = '',bg = 'white')
-    song_widgets.append(corrector)
-    corrector.grid(row = i-2,column = 0,pady = 20)
+    corrector = tk.Label(selection_frame_in,text = '\n\n\n\n',bg = 'white')
+    song_widgets.append([corrector])
+    corrector.grid(row = i,column = 0,pady = 20)
 
     selection_canvas.configure(scrollregion = selection_canvas.bbox(tk.ALL))
 
@@ -311,6 +347,13 @@ query_button = tk.Button(root,text = 'Query',width = 10,height = 2,
                          command = open_query)
 query_button.place(relx = 0.2,rely = 0.08,anchor = tk.CENTER)
 
+
+def undo_query():
+    fill_selection(music_array.query_to_list('',''))
+
+undo_query_button = tk.Button(root,text = 'Undo',width = 6,command = undo_query)
+undo_query_button.place(relx = 0.275,rely = 0.08,anchor = tk.CENTER)
+
 '''End of Query and Selection'''
 
 
@@ -346,6 +389,11 @@ def add_new_song():
     interval_entry = tk.Entry(song_level,width = 30)
     interval_entry.insert(0,'0.0,')
     interval_entry.place(relx = 0.5,rely = 0.425,anchor = tk.CENTER)
+    #Checking if user wants intervals every 10 seconds
+    is_ten = tk.BooleanVar(song_level)
+    ten_checkbutton = tk.Checkbutton(song_level,text = 'Insert Intervals each 20',
+                                     variable = is_ten)
+    ten_checkbutton.place(relx = 0.2,rely = 0.425,anchor = tk.CENTER)
 
     #Total Time
     tk.Label(song_level,text = 'Length(Seconds) *').place(relx = 0.8,rely = 0.325,anchor = tk.CENTER)
@@ -401,6 +449,11 @@ def add_new_song():
         for interval in interval_entry.get().split(','):
             if interval.replace('.','').replace(' ','').isdecimal():
                 intervals.append(float(interval))
+        #If is_ten, insert intervals from 0 to song length by 10
+        if is_ten.get():
+            for i in range(20,math.trunc(float(total_entry.get())),20):
+                intervals.append(float(i))
+            intervals.sort()
                 
         #If path isn't a file, do nothing
         if not file_path.is_file():
@@ -474,7 +527,11 @@ def open_editing(song):
     interval_entry = tk.Entry(editing_level,width = 30)
     interval_entry.insert(0,str(song.intervals).replace('[','').replace(']',''))
     interval_entry.place(relx = 0.5,rely = 0.425,anchor = tk.CENTER)
-
+    #Checking if user wants intervals every 10 seconds
+    is_ten = tk.BooleanVar(editing_level)
+    ten_checkbutton = tk.Checkbutton(editing_level,text = 'Insert Intervals each 20',
+                                     variable = is_ten)
+    ten_checkbutton.place(relx = 0.2,rely = 0.425,anchor = tk.CENTER)
     #Total Time
     tk.Label(editing_level,text = 'Length(Seconds) *').place(relx = 0.8,rely = 0.325,anchor = tk.CENTER)
     total_entry = tk.Entry(editing_level)
@@ -505,6 +562,11 @@ def open_editing(song):
         for interval in interval_entry.get().split(','):
             if interval.replace('.','').replace(' ','').isdecimal():
                 intervals.append(float(interval))
+        #If is_ten, insert intervals from 0 to song length by 10
+        if is_ten.get():
+            for i in range(20,math.trunc(float(total_entry.get())),20):
+                intervals.append(float(i))
+            intervals.sort()
 
         song2.name = name
         song2.path = path

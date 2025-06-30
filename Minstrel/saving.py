@@ -68,7 +68,7 @@ class Linked_List:
         return
 
     #Removes the node at position i by cutting it out of the chain
-    def remove_index(index):
+    def remove_index(self,index):
         #Remove the head if index is 0
         if index == 0:
             self.head = self.head.next
@@ -86,11 +86,18 @@ class Linked_List:
                 n.next = n.next.next
                 return to_remove
            
-    def remove_music(song):
+    def remove_music(self,song):
         n = self.head
-        while n != None and n.nxst.song != song:
-            n = n.next
         if n == None:
+            return None
+        elif n.song == song:
+            to_remove = n
+            self.head = n.next
+            return to_remove
+        
+        while n.next != None and n.next.song != song:
+            n = n.next
+        if n.next == None:
             #Do nothing
             return None
         else:
@@ -286,7 +293,57 @@ def save_df(df):
     df.to_csv('save_data/song_data.csv',index = False,header = False)
 
 
+if __name__ == '__main__':
 
+    
+    alist = Music_Array()
+    
+    sauron = Music('Sauron','mp3_files/Sauron.mp3',author = 'Bear McCreary',
+                   total_time = 165,intervals = [0.0,81.5,100.0],
+                   category = 'Battle/Interlude')
+    
+    mars = Music('Mars - the Bringer of War','mp3_files/Mars-the-Bringer-of-War.mp3',author = 'Gustav Holst',total_time = 425,intervals = [0.0,248.5],
+                 category = 'Battle/Sol')
+    lacrimosa = Music('Lacrimosa','mp3_files/Lacrimosa-Epic_Version-(Mozart).mp3',category = 'Battle/Victoria',author = 'Samuel Kim')
+    lacrimosa.total_time = 175
+    psalm135 = Music('Psalm 135','mp3_files/Psalm-135.mp3',category = 'Ambient/Choir',author = 'Andre Serba',total_time = 227)
+    thor = Music('The Hammer of Thor','mp3_files/The-Hammer-of-Thor.mp3',author = 'Bear McCreary',category = 'Battle/Nordenskjold',total_time = 202)
+    revan = Music('Darth Revan Cover','mp3_files/Darth-Revan-Cover.mp3',author = 'Samuel Kim',category = 'Battle/Beowulf')
+    revan.total_time = 172
+    deus = Music('Deus in Audiutorium','mp3_files/Deus-in-Adiutorium.mp3',author = 'Clamavi de Profundis',category = 'Ambient/Wondering')
+    deus.total_time = 287
+    we_praise = Music('We Praise Thee','mp3_files/We-Praise-Thee.mp3',category = 'Misc/Somber',author = 'Pavel Chesnokov',total_time = 218)
+    eternal = Music('Eternal Council','mp3_files/Eternal-Counsel-Op40-No2.mp3',category = 'Misc/Somber',author = 'Pavel Chesnokov',total_time = 236)
+    
+    alist.add_ordered(mars)
+    alist.add_ordered(sauron)
+    alist.add_ordered(psalm135)
+    alist.add_ordered(lacrimosa)
+    alist.add_ordered(thor)
+    alist.add_ordered(revan)
+    alist.add_ordered(deus)
+    alist.add_ordered(we_praise)
+    alist.add_ordered(eternal)
+    alist.add_ordered(line)
+    
+    #print(alist)
+
+    save_df(alist.to_df())
+
+    clist = save_to_music_array()
+
+    blist = Linked_List()
+    n0 = Node(sauron)
+    n1 = Node(mars)
+    n2 = Node(lacrimosa)
+
+    blist.add_node(n0)
+    blist.add_node(n1)
+    blist.replace_head(n2)
+    #print(blist)
+
+    for song in clist.query_to_list('',''):
+        print(song)
 
     
 

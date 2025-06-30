@@ -224,7 +224,7 @@ class Music:
         
         #Label to store the current time
         time_label = tk.Label(timer_canvas,text = self.timer)
-        time_label.place(relx = 0.9,rely = 0.9,anchor = tk.CENTER)
+        time_label.place(relx = 0.8895,rely = 0.9,anchor = tk.CENTER)
         update_timer()
         
         #Border for the timer canvas
@@ -302,13 +302,27 @@ class Music:
         tk.Label(music_canvas,text = self.name,font = ('Ariel',14)).place(relx = 0.5,rely = 0.075,anchor = tk.CENTER)
 
         tk.Label(music_canvas,text = f'Author: {self.author}').place(relx = 0.85,rely = 0.1,anchor = tk.CENTER)
-        tk.Label(music_canvas,text = self.timer.sec_to_format(self.total_time)).place(relx = 0.825,rely = 0.55,anchor = tk.CENTER)
+        tk.Label(music_canvas,text = self.timer.sec_to_format(self.total_time)).place(relx = 0.825,rely = 0.6,anchor = tk.CENTER)
 
         return music_canvas
         
         
-
-
+if __name__ == '__main__':
     
+    sauron = Music('Sauron','mp3_files/Sauron.mp3',author = 'Bear McCreary',total_time = 165)
+
+    sauron.intervals = [0.0,81.5,100.0]
+
+    root = tk.Tk()
+    root.title('Hi')
+    #sauron.to_window(root)
+    
+    print(sauron.name)
+
+    mars = Music('Mars, the Bringer of War','mp3_files/Mars-the-Bringer-of-War.mp3',author = 'Gustav Holst',total_time = 425,intervals = [0.0,248.5])
+
+    sauron.to_canvas(root).pack()
+
+    print(sauron.total_time)
     
     
