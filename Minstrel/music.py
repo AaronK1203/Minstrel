@@ -309,6 +309,6 @@ class Music:
         
 
 
-    print(sauron.total_time)
+    
     
     
